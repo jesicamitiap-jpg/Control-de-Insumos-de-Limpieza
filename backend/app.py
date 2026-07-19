@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify, session
 from flask_cors import CORS
 import bcrypt
 from datetime import datetime
-from database import get_db_connection, execute_query
+from backend.database import get_db_connection, execute_query
 
 app = Flask(__name__)
 CORS(app)
