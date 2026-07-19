@@ -7,7 +7,7 @@ from backend.database import get_db_connection, execute_query
 app = Flask(__name__)
 CORS(app)
 app.config['SECRET_KEY'] = 'tu_clave_secreta'
-CORS(app, supports_credentials=True)
+CORS(app, supports_credentials=True, origins=["https://github.io"])
 
 # ==================== AUTENTICACIÓN ====================
 @app.route('/api/login', methods=['POST'])
