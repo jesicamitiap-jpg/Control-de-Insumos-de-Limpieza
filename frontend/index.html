@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">0
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Insumos de Limpieza</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="login-container">
+        <div class="login-box">
+            <h2>Control de Insumos</h2>
+            <h3>Iniciar Sesión</h3>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username">Usuario:</label>
+                    <input type="text" id="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Contraseña:</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit">Ingresar</button>
+                <div id="login-error" class="error-message"></div>
+            </form>
+        </div>
+    </div>
+
+    <div id="main-container" style="display: none;">
+        <nav class="navbar">
+            <div class="nav-header">
+                <h1>Control de Insumos</h1>
+                <div class="user-info">
+                    <span id="user-name">Usuario</span>
+                    <button id="logout-btn" class="btn-logout">Cerrar Sesión</button>
+                </div>
+            </div>
+            <div class="nav-tabs">
+                <button class="tab-btn active" data-tab="insumos">Insumos</button>
+                <button class="tab-btn" data-tab="movimientos">Movimientos</button>
+                <button class="tab-btn" data-tab="categorias">Categorías</button>
+                <button class="tab-btn" data-tab="proveedores">Proveedores</button>
+                <button class="tab-btn" data-tab="reportes">Reportes</button>
+            </div>
+        </nav>
+
+        <div class="content">
+            <!-- Tab Insumos -->
+            <div id="tab-insumos" class="tab-content active">
+                <div class="tab-header">
+                    <h2>Gestión de Insumos</h2>
+                    <button id="btn-nuevo-insumo" class="btn-primary">+ Nuevo Insumo</button>
+                </div>
+                <div class="search-container">
+                    <input type="text" id="search-insumo" placeholder="Buscar insumo...">
+                </div>
+                <table id="insumos-table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Nombre</th>
+                            <th>Categoría</th>
+                            <th>Stock</th>
+                            <th>Mínimo</th>
+                            <th>Precio</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="insumos-body">
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Tab Movimientos -->
+            <div id="tab-movimientos" class="tab-content">
+                <div class="tab-header">
+                    <h2>Registro de Movimientos</h2>
+                    <button id="btn-nuevo-movimiento" class="btn-primary">+ Nuevo Movimiento</button>
+                </div>
+                <table id="movimientos-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Insumo</th>
+                            <th>Tipo</th>
+                            <th>Cantidad</th>
+                            <th>Usuario</th>
+                            <th>Observaciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="movimientos-body">
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Tab Categorías -->
+            <div id="tab-categorias" class="tab-content">
+                <div class="tab-header">
+                    <h2>Categorías</h2>
+                    <button id="btn-nueva-categoria" class="btn-primary">+ Nueva Categoría</button>
+                </div>
+                <table id="categorias-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Descripción</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="categorias-body">
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Tab Proveedores -->
+            <div id="tab-proveedores" class="tab-content">
+                <div class="tab-header">
+                    <h2>Proveedores</h2>
+                    <button id="btn-nuevo-proveedor" class="btn-primary">+ Nuevo Proveedor</button>
+                </div>
+                <table id="proveedores-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Contacto</th>
+                            <th>Teléfono</th>
+                            <th>Email</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="proveedores-body">
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Tab Reportes -->
+            <div id="tab-reportes" class="tab-content">
+                <h2>Reportes</h2>
+                <div class="reportes-grid">
+                    <div class="reporte-card">
+                        <h3>Stock Bajo</h3>
+                        <div id="stock-bajo-list"></div>
+                    </div>
+                    <div class="reporte-card">
+                        <h3>Resumen General</h3>
+                        <div id="resumen-general"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modales -->
+    <div id="modal-insumo" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modal-insumo-title">Nuevo Insumo</h2>
+            <form id="insumo-form">
+                <input type="hidden" id="insumo-id">
+                <div class="form-group">
+                    <label>Código:</label>
+                    <input type="text" id="insumo-codigo" required>
+                </div>
+                <div class="form-group">
+                    <label>Nombre:</label>
+                    <input type="text" id="insumo-nombre" required>
+                </div>
+                <div class="form-group">
+                    <label>Categoría:</label>
+                    <select id="insumo-categoria"></select>
+                </div>
+                <div class="form-group">
+                    <label>Unidad de Medida:</label>
+                    <input type="text" id="insumo-unidad">
+                </div>
+                <div class="form-group">
+                    <label>Stock Mínimo:</label>
+                    <input type="number" id="insumo-stock-minimo" value="5">
+                </div>
+                <div class="form-group">
+                    <label>Stock Actual:</label>
+                    <input type="number" id="insumo-stock-actual" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Precio Unitario:</label>
+                    <input type="number" step="0.01" id="insumo-precio" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Descripción:</label>
+                    <textarea id="insumo-descripcion"></textarea>
+                </div>
+                <button type="submit">Guardar</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-movimiento" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Nuevo Movimiento</h2>
+            <form id="movimiento-form">
+                <div class="form-group">
+                    <label>Insumo:</label>
+                    <select id="movimiento-insumo" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Tipo:</label>
+                    <select id="movimiento-tipo" required>
+                        <option value="entrada">Entrada</option>
+                        <option value="salida">Salida</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Cantidad:</label>
+                    <input type="number" id="movimiento-cantidad" required min="1">
+                </div>
+                <div class="form-group">
+                    <label>Observaciones:</label>
+                    <textarea id="movimiento-observaciones"></textarea>
+                </div>
+                <button type="submit">Registrar Movimiento</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>
