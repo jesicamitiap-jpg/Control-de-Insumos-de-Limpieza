@@ -1,5 +1,6 @@
 // ==================== CONFIGURACIÓN ====================
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'http://onrender.com';
+method:"POST",
 
 // ==================== AUTENTICACIÓN ====================
 document.addEventListener('DOMContentLoaded', function() {
