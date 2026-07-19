@@ -1,5 +1,5 @@
 // ==================== CONFIGURACIÓN ====================
-const API_URL = 'http://onrender.com';
+const API_URL = 'https://control-de-insumos-de-limpieza.onrender.com';
 
 
 // ==================== AUTENTICACIÓN ====================
