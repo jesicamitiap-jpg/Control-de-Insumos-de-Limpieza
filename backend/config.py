@@ -9,4 +9,4 @@ class Config:
     MYSQL_USER = 'root'
     MYSQL_PASSWORD = ''  # Tu contraseña de MySQL
     MYSQL_DB = 'control_insumos'
-    MYSQL_PORT = 3306
+    MYSQL_PORT = 8012
