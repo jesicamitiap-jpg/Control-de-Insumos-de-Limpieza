@@ -9,13 +9,10 @@ app.config['SECRET_KEY'] = 'tu_clave_secreta_muy_segura'
 app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_COOKIE_HTTPONLY'] = True
-
 # Configuración CORS actualizada
 CORS(app, 
      supports_credentials=True,
-     resources=["https://github.io", 
-              "http://localhost:5500", 
-              "http://127.0.0.1:5500"])
+     resources={r"/*":{"origins":"*"}})
 
 # ... resto del código
 
