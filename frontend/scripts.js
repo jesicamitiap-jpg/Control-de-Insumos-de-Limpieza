@@ -1,5 +1,5 @@
 // ==================== CONFIGURACIÓN ====================
-const API_URL = 'https://control-de-insumos-de-limpieza.onrender.com';
+const API_URL = 'https://onrender.com';
 
 // ==================== FETCH CON CREDENCIALES ====================
 async function fetchWithCredentials(url, options = {}) {
