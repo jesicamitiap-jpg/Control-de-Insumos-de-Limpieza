@@ -21,7 +21,7 @@ CORS(app,
      origins=[
          "http://localhost:8012",
          "https://github.com",  # Cambia por tu usuario de GitHub
-         "https://control-de-insumos-de-limpieza.onrender.com"
+         "https://127.0.0.1:8012"
      ]
 )
 
