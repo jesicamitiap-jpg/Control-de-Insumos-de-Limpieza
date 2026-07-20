@@ -19,8 +19,8 @@ app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hora
 CORS(app,
      supports_credentials=True,
      origins=[
-         "http://localhost:5500",
-         "https://tu-usuario.github.io",  # Cambia por tu usuario de GitHub
+         "http://localhost:8012",
+         "https://github.com",  # Cambia por tu usuario de GitHub
          "https://control-de-insumos-de-limpieza.onrender.com"
      ]
 )
