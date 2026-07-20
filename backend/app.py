@@ -20,8 +20,8 @@ def login():
         
         if username =="emir" and password =="emir123":
             return jsonify({
-         "sucess": True,
-         "mensage": "login exitoso",
+         "success": True,
+         "message": "login exitoso",
          "user":{
             "id":1,
             
