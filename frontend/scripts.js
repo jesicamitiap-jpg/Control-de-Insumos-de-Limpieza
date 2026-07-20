@@ -1,6 +1,33 @@
 // ==================== CONFIGURACIÓN ====================
 const API_URL = 'https://control-de-insumos-de-limpieza.onrender.com/api';
 
+// ==================== FETCH CON CREDENCIALES ====================
+async function fetchWithCredentials(url, options = {}) {
+    const defaultOptions = {
+        credentials: 'include', // 🔥 ENVÍA COOKIES DE SESIÓN
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    };
+    
+    const mergedOptions = {
+        ...defaultOptions,
+        ...options,
+        headers: {
+            ...defaultOptions.headers,
+            ...options.headers
+        }
+    };
+    
+    try {
+        const response = await fetch(url, mergedOptions);
+        return response;
+    } catch (error) {
+        console.error('❌ Error en fetch:', error);
+        throw error;
+    }
+}
+
 // ==================== AUTENTICACIÓN ====================
 document.addEventListener('DOMContentLoaded', function() {
     checkSession();
@@ -38,27 +65,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('movimiento-form').addEventListener('submit', handleMovimientoSubmit);
 });
 
-// ==================== FUNCIÓN PARA FETCH CON CREDENCIALES ====================
-async function fetchWithCredentials(url, options = {}) {
-    const defaultOptions = {
-        credentials: 'include', // 🔥 IMPORTANTE: Envía cookies de sesión
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    };
-    
-    const mergedOptions = {
-        ...defaultOptions,
-        ...options,
-        headers: {
-            ...defaultOptions.headers,
-            ...options.headers
-        }
-    };
-    
-    return fetch(url, mergedOptions);
-}
-
 // ==================== SESIÓN ====================
 async function checkSession() {
     try {
@@ -83,6 +89,7 @@ async function checkSession() {
         console.error('Error checking session:', error);
         document.getElementById('login-container').style.display = 'flex';
         document.getElementById('main-container').style.display = 'none';
+        document.getElementById('login-error').textContent = '⚠️ Error de conexión con el servidor';
     }
 }
 
@@ -100,7 +107,7 @@ async function handleLogin(e) {
         const data = await response.json();
         if (data.success) {
             document.getElementById('login-error').textContent = '';
-            await checkSession();
+            await checkSession(); // Recargar sesión
         } else {
             document.getElementById('login-error').textContent = data.message || 'Error de autenticación';
         }
@@ -138,6 +145,7 @@ function switchTab(e) {
 async function loadInsumos() {
     try {
         const response = await fetchWithCredentials(`${API_URL}/insumos`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const insumos = await response.json();
         
         const tbody = document.getElementById('insumos-body');
@@ -166,15 +174,16 @@ async function loadInsumos() {
         });
     } catch (error) {
         console.error('Error loading insumos:', error);
+        document.getElementById('insumos-body').innerHTML = '<tr><td colspan="7">Error al cargar insumos</td></tr>';
     }
 }
 
 async function loadCategorias() {
     try {
         const response = await fetchWithCredentials(`${API_URL}/categorias`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const categorias = await response.json();
         
-        // Llenar select de categorías en modal de insumo
         const select = document.getElementById('insumo-categoria');
         select.innerHTML = '<option value="">Seleccionar categoría</option>';
         if (Array.isArray(categorias)) {
@@ -224,6 +233,7 @@ function openModal(type, data = null) {
 async function loadInsumosSelect() {
     try {
         const response = await fetchWithCredentials(`${API_URL}/insumos`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const insumos = await response.json();
         const select = document.getElementById('movimiento-insumo');
         select.innerHTML = '';
@@ -280,6 +290,7 @@ async function handleInsumoSubmit(e) {
 async function editInsumo(id) {
     try {
         const response = await fetchWithCredentials(`${API_URL}/insumos/${id}`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
         if (data.error) {
             alert(data.error);
@@ -313,6 +324,7 @@ async function deleteInsumo(id) {
 async function loadMovimientos() {
     try {
         const response = await fetchWithCredentials(`${API_URL}/movimientos`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const movimientos = await response.json();
         
         const tbody = document.getElementById('movimientos-body');
@@ -334,6 +346,7 @@ async function loadMovimientos() {
         }
     } catch (error) {
         console.error('Error loading movimientos:', error);
+        document.getElementById('movimientos-body').innerHTML = '<tr><td colspan="6">Error al cargar movimientos</td></tr>';
     }
 }
 
@@ -371,6 +384,7 @@ async function handleMovimientoSubmit(e) {
 async function loadProveedores() {
     try {
         const response = await fetchWithCredentials(`${API_URL}/proveedores`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const proveedores = await response.json();
         
         const tbody = document.getElementById('proveedores-body');
@@ -395,6 +409,7 @@ async function loadProveedores() {
         }
     } catch (error) {
         console.error('Error loading proveedores:', error);
+        document.getElementById('proveedores-body').innerHTML = '<tr><td colspan="6">Error al cargar proveedores</td></tr>';
     }
 }
 
@@ -403,13 +418,14 @@ async function loadReportes() {
     try {
         // Stock bajo
         const stockResponse = await fetchWithCredentials(`${API_URL}/reportes/stock_bajo`);
+        if (!stockResponse.ok) throw new Error(`HTTP ${stockResponse.status}`);
         const stockBajo = await stockResponse.json();
         
         const stockList = document.getElementById('stock-bajo-list');
         stockList.innerHTML = '';
         
         if (Array.isArray(stockBajo) && stockBajo.length === 0) {
-            stockList.innerHTML = '<p>No hay productos con stock bajo</p>';
+            stockList.innerHTML = '<p>✅ No hay productos con stock bajo</p>';
         } else if (Array.isArray(stockBajo)) {
             const ul = document.createElement('ul');
             stockBajo.forEach(item => {
@@ -423,6 +439,7 @@ async function loadReportes() {
         
         // Resumen
         const resumenResponse = await fetchWithCredentials(`${API_URL}/reportes/resumen`);
+        if (!resumenResponse.ok) throw new Error(`HTTP ${resumenResponse.status}`);
         const resumen = await resumenResponse.json();
         
         const resumenDiv = document.getElementById('resumen-general');
@@ -444,6 +461,7 @@ async function loadReportes() {
         }
     } catch (error) {
         console.error('Error loading reportes:', error);
+        document.getElementById('stock-bajo-list').innerHTML = '<p>Error al cargar reportes</p>';
     }
 }
 
