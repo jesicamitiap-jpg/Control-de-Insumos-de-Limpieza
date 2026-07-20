@@ -1,5 +1,5 @@
 // ==================== CONFIGURACIÓN ====================
-const API_URL = 'http//localhost:5005';
+const API_URL ='';
 
 // ==================== FETCH CON CREDENCIALES ====================
 async function fetchWithCredentials(url, options = {}) {
@@ -99,7 +99,7 @@ async function handleLogin(e) {
     const password = document.getElementById('password').value;
     
     try {
-        const response = await fetchWithCredentials(`${API_URL}api/login`, {
+        const response = await fetchWithCredentials(`${API_URL}/login`, {
             method: 'POST',
             body: JSON.stringify({ username, password })
         });
