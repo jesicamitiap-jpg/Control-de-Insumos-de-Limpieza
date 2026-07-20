@@ -38,10 +38,31 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('movimiento-form').addEventListener('submit', handleMovimientoSubmit);
 });
 
+// ==================== FUNCIÓN PARA FETCH CON CREDENCIALES ====================
+async function fetchWithCredentials(url, options = {}) {
+    const defaultOptions = {
+        credentials: 'include', // 🔥 IMPORTANTE: Envía cookies de sesión
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    };
+    
+    const mergedOptions = {
+        ...defaultOptions,
+        ...options,
+        headers: {
+            ...defaultOptions.headers,
+            ...options.headers
+        }
+    };
+    
+    return fetch(url, mergedOptions);
+}
+
 // ==================== SESIÓN ====================
 async function checkSession() {
     try {
-        const response = await fetch(`${API_URL}/check_session`);
+        const response = await fetchWithCredentials(`${API_URL}/check_session`);
         if (response.ok) {
             const data = await response.json();
             document.getElementById('login-container').style.display = 'none';
@@ -60,6 +81,8 @@ async function checkSession() {
         }
     } catch (error) {
         console.error('Error checking session:', error);
+        document.getElementById('login-container').style.display = 'flex';
+        document.getElementById('main-container').style.display = 'none';
     }
 }
 
@@ -69,16 +92,15 @@ async function handleLogin(e) {
     const password = document.getElementById('password').value;
     
     try {
-        const response = await fetch(`${API_URL}/login`, {
+        const response = await fetchWithCredentials(`${API_URL}/login`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
         });
         
         const data = await response.json();
         if (data.success) {
             document.getElementById('login-error').textContent = '';
-            checkSession();
+            await checkSession();
         } else {
             document.getElementById('login-error').textContent = data.message || 'Error de autenticación';
         }
@@ -90,7 +112,7 @@ async function handleLogin(e) {
 
 async function handleLogout() {
     try {
-        await fetch(`${API_URL}/logout`, { method: 'POST' });
+        await fetchWithCredentials(`${API_URL}/logout`, { method: 'POST' });
         checkSession();
     } catch (error) {
         console.error('Logout error:', error);
@@ -115,11 +137,16 @@ function switchTab(e) {
 // ==================== INSUMOS ====================
 async function loadInsumos() {
     try {
-        const response = await fetch(`${API_URL}/insumos`);
+        const response = await fetchWithCredentials(`${API_URL}/insumos`);
         const insumos = await response.json();
         
         const tbody = document.getElementById('insumos-body');
         tbody.innerHTML = '';
+        
+        if (!Array.isArray(insumos)) {
+            console.error('Error: insumos no es un array', insumos);
+            return;
+        }
         
         insumos.forEach(insumo => {
             const tr = document.createElement('tr');
@@ -144,18 +171,20 @@ async function loadInsumos() {
 
 async function loadCategorias() {
     try {
-        const response = await fetch(`${API_URL}/categorias`);
+        const response = await fetchWithCredentials(`${API_URL}/categorias`);
         const categorias = await response.json();
         
         // Llenar select de categorías en modal de insumo
         const select = document.getElementById('insumo-categoria');
         select.innerHTML = '<option value="">Seleccionar categoría</option>';
-        categorias.forEach(cat => {
-            const option = document.createElement('option');
-            option.value = cat.id_categoria;
-            option.textContent = cat.nombre_categoria;
-            select.appendChild(option);
-        });
+        if (Array.isArray(categorias)) {
+            categorias.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat.id_categoria;
+                option.textContent = cat.nombre_categoria;
+                select.appendChild(option);
+            });
+        }
     } catch (error) {
         console.error('Error loading categorias:', error);
     }
@@ -194,16 +223,18 @@ function openModal(type, data = null) {
 
 async function loadInsumosSelect() {
     try {
-        const response = await fetch(`${API_URL}/insumos`);
+        const response = await fetchWithCredentials(`${API_URL}/insumos`);
         const insumos = await response.json();
         const select = document.getElementById('movimiento-insumo');
         select.innerHTML = '';
-        insumos.forEach(insumo => {
-            const option = document.createElement('option');
-            option.value = insumo.id_insumo;
-            option.textContent = `${insumo.codigo} - ${insumo.nombre} (Stock: ${insumo.stock_actual})`;
-            select.appendChild(option);
-        });
+        if (Array.isArray(insumos)) {
+            insumos.forEach(insumo => {
+                const option = document.createElement('option');
+                option.value = insumo.id_insumo;
+                option.textContent = `${insumo.codigo} - ${insumo.nombre} (Stock: ${insumo.stock_actual})`;
+                select.appendChild(option);
+            });
+        }
     } catch (error) {
         console.error('Error loading insumos select:', error);
     }
@@ -227,9 +258,8 @@ async function handleInsumoSubmit(e) {
         const url = id ? `${API_URL}/insumos/${id}` : `${API_URL}/insumos`;
         const method = id ? 'PUT' : 'POST';
         
-        const response = await fetch(url, {
+        const response = await fetchWithCredentials(url, {
             method: method,
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         });
         
@@ -249,7 +279,7 @@ async function handleInsumoSubmit(e) {
 
 async function editInsumo(id) {
     try {
-        const response = await fetch(`${API_URL}/insumos/${id}`);
+        const response = await fetchWithCredentials(`${API_URL}/insumos/${id}`);
         const data = await response.json();
         if (data.error) {
             alert(data.error);
@@ -266,7 +296,7 @@ async function deleteInsumo(id) {
     if (!confirm('¿Estás seguro de eliminar este insumo?')) return;
     
     try {
-        const response = await fetch(`${API_URL}/insumos/${id}`, { method: 'DELETE' });
+        const response = await fetchWithCredentials(`${API_URL}/insumos/${id}`, { method: 'DELETE' });
         if (response.ok) {
             loadInsumos();
             loadReportes();
@@ -282,24 +312,26 @@ async function deleteInsumo(id) {
 // ==================== MOVIMIENTOS ====================
 async function loadMovimientos() {
     try {
-        const response = await fetch(`${API_URL}/movimientos`);
+        const response = await fetchWithCredentials(`${API_URL}/movimientos`);
         const movimientos = await response.json();
         
         const tbody = document.getElementById('movimientos-body');
         tbody.innerHTML = '';
         
-        movimientos.forEach(mov => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${new Date(mov.fecha_movimiento).toLocaleString()}</td>
-                <td>${mov.insumo_nombre || 'ID: ' + mov.id_insumo}</td>
-                <td><span class="badge ${mov.tipo_movimiento}">${mov.tipo_movimiento}</span></td>
-                <td>${mov.cantidad}</td>
-                <td>${mov.usuario_nombre || 'Sistema'}</td>
-                <td>${mov.observaciones || ''}</td>
-            `;
-            tbody.appendChild(tr);
-        });
+        if (Array.isArray(movimientos)) {
+            movimientos.forEach(mov => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${new Date(mov.fecha_movimiento).toLocaleString()}</td>
+                    <td>${mov.insumo_nombre || 'ID: ' + mov.id_insumo}</td>
+                    <td><span class="badge ${mov.tipo_movimiento}">${mov.tipo_movimiento}</span></td>
+                    <td>${mov.cantidad}</td>
+                    <td>${mov.usuario_nombre || 'Sistema'}</td>
+                    <td>${mov.observaciones || ''}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
     } catch (error) {
         console.error('Error loading movimientos:', error);
     }
@@ -315,9 +347,8 @@ async function handleMovimientoSubmit(e) {
     };
     
     try {
-        const response = await fetch(`${API_URL}/movimientos`, {
+        const response = await fetchWithCredentials(`${API_URL}/movimientos`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         });
         
@@ -339,27 +370,29 @@ async function handleMovimientoSubmit(e) {
 // ==================== PROVEEDORES ====================
 async function loadProveedores() {
     try {
-        const response = await fetch(`${API_URL}/proveedores`);
+        const response = await fetchWithCredentials(`${API_URL}/proveedores`);
         const proveedores = await response.json();
         
         const tbody = document.getElementById('proveedores-body');
         tbody.innerHTML = '';
         
-        proveedores.forEach(prov => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${prov.id_proveedor}</td>
-                <td>${prov.nombre_proveedor}</td>
-                <td>${prov.contacto || ''}</td>
-                <td>${prov.telefono || ''}</td>
-                <td>${prov.email || ''}</td>
-                <td>
-                    <button class="btn-action btn-edit">Editar</button>
-                    <button class="btn-action btn-delete">Eliminar</button>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
+        if (Array.isArray(proveedores)) {
+            proveedores.forEach(prov => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${prov.id_proveedor}</td>
+                    <td>${prov.nombre_proveedor}</td>
+                    <td>${prov.contacto || ''}</td>
+                    <td>${prov.telefono || ''}</td>
+                    <td>${prov.email || ''}</td>
+                    <td>
+                        <button class="btn-action btn-edit">Editar</button>
+                        <button class="btn-action btn-delete">Eliminar</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
     } catch (error) {
         console.error('Error loading proveedores:', error);
     }
@@ -369,15 +402,15 @@ async function loadProveedores() {
 async function loadReportes() {
     try {
         // Stock bajo
-        const stockResponse = await fetch(`${API_URL}/reportes/stock_bajo`);
+        const stockResponse = await fetchWithCredentials(`${API_URL}/reportes/stock_bajo`);
         const stockBajo = await stockResponse.json();
         
         const stockList = document.getElementById('stock-bajo-list');
         stockList.innerHTML = '';
         
-        if (stockBajo.length === 0) {
+        if (Array.isArray(stockBajo) && stockBajo.length === 0) {
             stockList.innerHTML = '<p>No hay productos con stock bajo</p>';
-        } else {
+        } else if (Array.isArray(stockBajo)) {
             const ul = document.createElement('ul');
             stockBajo.forEach(item => {
                 const li = document.createElement('li');
@@ -389,24 +422,26 @@ async function loadReportes() {
         }
         
         // Resumen
-        const resumenResponse = await fetch(`${API_URL}/reportes/resumen`);
+        const resumenResponse = await fetchWithCredentials(`${API_URL}/reportes/resumen`);
         const resumen = await resumenResponse.json();
         
         const resumenDiv = document.getElementById('resumen-general');
-        resumenDiv.innerHTML = `
-            <div class="resumen-item">
-                <span class="label">Total de Insumos:</span>
-                <span class="value">${resumen.total_insumos || 0}</span>
-            </div>
-            <div class="resumen-item">
-                <span class="label">Stock Bajo:</span>
-                <span class="value">${resumen.stock_bajo || 0}</span>
-            </div>
-            <div class="resumen-item">
-                <span class="label">Movimientos Hoy:</span>
-                <span class="value">${resumen.movimientos_hoy || 0}</span>
-            </div>
-        `;
+        if (resumen && !resumen.error) {
+            resumenDiv.innerHTML = `
+                <div class="resumen-item">
+                    <span class="label">Total de Insumos:</span>
+                    <span class="value">${resumen.total_insumos || 0}</span>
+                </div>
+                <div class="resumen-item">
+                    <span class="label">Stock Bajo:</span>
+                    <span class="value">${resumen.stock_bajo || 0}</span>
+                </div>
+                <div class="resumen-item">
+                    <span class="label">Movimientos Hoy:</span>
+                    <span class="value">${resumen.movimientos_hoy || 0}</span>
+                </div>
+            `;
+        }
     } catch (error) {
         console.error('Error loading reportes:', error);
     }

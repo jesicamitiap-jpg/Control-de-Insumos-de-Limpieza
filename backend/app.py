@@ -5,9 +5,17 @@ from datetime import datetime
 from backend.database import get_db_connection, execute_query
 
 app = Flask(__name__)
-CORS(app)
-app.config['SECRET_KEY'] = 'tu_clave_secreta'
-CORS(app, supports_credentials=True, origins=["https://github.io"])
+app.config['SECRET_KEY'] = 'tu_clave_secreta_muy_segura'
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+
+# Configuración CORS actualizada
+CORS(app, 
+     supports_credentials=True,
+     origins=["https://github.io", "https://tu-usuario.github.io", "http://localhost:5500", "http://127.0.0.1:5500"])
+
+# ... resto del código
 
 # ==================== AUTENTICACIÓN ====================
 @app.route('/api/login', methods=['POST'])
