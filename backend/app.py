@@ -20,8 +20,6 @@ CORS(app,
      supports_credentials=True,
      origins=[
          "http://localhost:5500",
-         "http://localhost:3000",
-         "http://127.0.0.1:5500",
          "https://tu-usuario.github.io",  # Cambia por tu usuario de GitHub
          "https://control-de-insumos-de-limpieza.onrender.com"
      ]
@@ -305,4 +303,4 @@ def resumen():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(debug=True, port=8012)
