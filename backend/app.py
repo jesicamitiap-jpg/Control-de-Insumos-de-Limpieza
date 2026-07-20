@@ -324,7 +324,7 @@ def resumen():
 def check_session():
     if 'user' in session:
         return jsonify({'logged_in': True, 'user': session['user']}), 200
-    return jsonify({'logged_in': False}), 200
+    return jsonify({'logged_in': False}), 200C
 # ==================== INICIO ====================
 if __name__ == '__main__':
     app.run(debug=True, port=5005)
