@@ -5,38 +5,55 @@ from datetime import datetime
 from backend.database import get_db_connection, execute_query
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'tu_clave_secreta_muy_segura'
+
+# ==================== CONFIGURACIÓN DE SEGURIDAD ====================
+app.config['SECRET_KEY'] = 'tu_clave_secreta_muy_segura_cambia_esto'
 app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_COOKIE_HTTPONLY'] = True
-# Configuración CORS actualizada
-CORS(app, 
-     supports_credentials=True,
-     resources={r"/*":{"origins":"*"}})
+app.config['SESSION_PERMANENT'] = False
+app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hora
 
-# ... resto del código
+# ==================== CONFIGURACIÓN CORS CORREGIDA ====================
+# 🔥 IMPORTANTE: No usar "*" con credentials=True
+CORS(app,
+     supports_credentials=True,
+     origins=[
+         "http://localhost:5500",
+         "http://localhost:3000",
+         "http://127.0.0.1:5500",
+         "https://tu-usuario.github.io",  # Cambia por tu usuario de GitHub
+         "https://control-de-insumos-de-limpieza.onrender.com"
+     ]
+)
 
 # ==================== AUTENTICACIÓN ====================
-@app.route('/api/login', methods=['POST'])
 
+@app.route('/api/login', methods=['POST'])
 def login():
     try:
         data = request.json
         username = data.get('username')
         password = data.get('password')
         
-        if username =="emir" and password =="emir123":
-            return jsonify({
-         "success": True,
-         "message": "login exitoso",
-         "user":{
-            "id":1,
+        # 🔥 LOGIN HARCODEADO PARA PRUEBAS (CORREGIDO)
+        if username == "emir" and password == "emir123":
+            # 🔥 ESTABLECER LA SESIÓN CORRECTAMENTE
+            session['user_id'] = 1
+            session['username'] = 'emir'
+            session['role'] = 'admin'
             
-         "username": "admin",
-         "nombre ":"Administracion principal",
-         "rol":"administrador"
-         }
-         })
+            return jsonify({
+                'success': True,
+                'message': 'Login exitoso',
+                'user': {
+                    'id': 1,
+                    'username': 'emir',
+                    'nombre_completo': 'Emir Administrador',
+                    'rol': 'admin'
+                }
+            })
+        
         # Buscar usuario en la base de datos
         query = "SELECT * FROM usuarios WHERE nombre_usuario = %s AND activo = TRUE"
         user = execute_query(query, (username,))
@@ -46,7 +63,7 @@ def login():
         
         user = user[0]
         
-        # Verificar contraseña (en producción usar bcrypt)
+        # Verificar contraseña con bcrypt
         if bcrypt.checkpw(password.encode('utf-8'), user['contrasena'].encode('utf-8')):
             session['user_id'] = user['id_usuario']
             session['username'] = user['nombre_usuario']
@@ -64,7 +81,9 @@ def login():
             })
         else:
             return jsonify({'success': False, 'message': 'Contraseña incorrecta'}), 401
+            
     except Exception as e:
+        print(f"Error en login: {e}")
         return jsonify({'success': False, 'message': str(e)}), 500
 
 @app.route('/api/logout', methods=['POST'])
@@ -86,6 +105,7 @@ def check_session():
     return jsonify({'authenticated': False}), 401
 
 # ==================== INSUMOS ====================
+
 @app.route('/api/insumos', methods=['GET'])
 def get_insumos():
     try:
@@ -176,6 +196,7 @@ def delete_insumo(id):
         return jsonify({'error': str(e)}), 500
 
 # ==================== MOVIMIENTOS ====================
+
 @app.route('/api/movimientos', methods=['GET'])
 def get_movimientos():
     try:
@@ -223,6 +244,7 @@ def create_movimiento():
         return jsonify({'error': str(e)}), 500
 
 # ==================== CATEGORÍAS ====================
+
 @app.route('/api/categorias', methods=['GET'])
 def get_categorias():
     try:
@@ -233,6 +255,7 @@ def get_categorias():
         return jsonify({'error': str(e)}), 500
 
 # ==================== PROVEEDORES ====================
+
 @app.route('/api/proveedores', methods=['GET'])
 def get_proveedores():
     try:
@@ -243,6 +266,7 @@ def get_proveedores():
         return jsonify({'error': str(e)}), 500
 
 # ==================== REPORTES ====================
+
 @app.route('/api/reportes/stock_bajo', methods=['GET'])
 def stock_bajo():
     try:
@@ -264,21 +288,21 @@ def resumen():
         # Total insumos
         query = "SELECT COUNT(*) as total FROM insumos"
         result = execute_query(query)
-        resumen['total_insumos'] = result[0]['total']
+        resumen['total_insumos'] = result[0]['total'] if result else 0
         
         # Insumos con stock bajo
         query = "SELECT COUNT(*) as bajo FROM insumos WHERE stock_actual <= stock_minimo"
         result = execute_query(query)
-        resumen['stock_bajo'] = result[0]['bajo']
+        resumen['stock_bajo'] = result[0]['bajo'] if result else 0
         
         # Total movimientos hoy
         query = "SELECT COUNT(*) as hoy FROM movimientos WHERE DATE(fecha_movimiento) = CURDATE()"
         result = execute_query(query)
-        resumen['movimientos_hoy'] = result[0]['hoy']
+        resumen['movimientos_hoy'] = result[0]['hoy'] if result else 0
         
         return jsonify(resumen)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0",port=5000,debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
