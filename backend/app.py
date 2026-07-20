@@ -13,7 +13,9 @@ app.config['SESSION_COOKIE_HTTPONLY'] = True
 # Configuración CORS actualizada
 CORS(app, 
      supports_credentials=True,
-     origins=["https://github.io", "https://tu-usuario.github.io", "http://localhost:5500", "http://127.0.0.1:5500"])
+     origins=["https://github.io", 
+              "http://localhost:5500", 
+              "http://127.0.0.1:5500"])
 
 # ... resto del código
 
