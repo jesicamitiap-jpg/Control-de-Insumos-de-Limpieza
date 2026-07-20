@@ -1,5 +1,5 @@
 // ==================== CONFIGURACIÓN ====================
-const API_URL = 'https://onrender.com';
+const API_URL = 'http//localhost:5005';
 
 // ==================== FETCH CON CREDENCIALES ====================
 async function fetchWithCredentials(url, options = {}) {

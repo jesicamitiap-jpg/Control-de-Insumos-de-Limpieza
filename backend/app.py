@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify, session
 from flask_cors import CORS
 import bcrypt
 from datetime import datetime
-from backend.database import get_db_connection, execute_query
+from database import get_db_connection, execute_query
 
 app = Flask(__name__)
 
@@ -303,4 +303,4 @@ def resumen():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, port=8012)
+    app.run(debug=True, port=5005)
