@@ -17,7 +17,11 @@ app.config['SESSION_PERMANENT'] = False
 app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hora
 
 # ==================== CONFIGURACIÓN CORS ====================
-CORS(app, supports_credentials=True, origins=["https://jesicamitiap-jpg.github.io", "http://localhost:8012", "https://127.0.0.1:8012"])
+CORS(app, supports_credentials=True, 
+     origins=["https://jesicamitiap-jpg.github.io", 
+              "http://localhost:8012",
+              "http://127.0.0.1:8012"],
+     methods=["GET","POST","OPTIONS"])
 
 # ==================== RUTA PRINCIPAL ====================
 @app.route("/")
@@ -316,4 +320,4 @@ def resumen():
 
 # ==================== INICIO ====================
 if __name__ == '__main__':
-    app.run(debug=True, port=5005)
+    app.run(debug=True, port=5005, threaded=True)
