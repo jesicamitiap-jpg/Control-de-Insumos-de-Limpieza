@@ -21,7 +21,7 @@ CORS(app,
      supports_credentials=True,
      origins=[
          "http://localhost:8012",
-         "https://tudominio.com",          # CAMBIA esto por tu dominio real
+         "https://github.io",          # CAMBIA esto por tu dominio real
          "https://127.0.0.1:8012"
      ]
 )
