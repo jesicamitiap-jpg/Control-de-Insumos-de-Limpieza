@@ -17,14 +17,7 @@ app.config['SESSION_PERMANENT'] = False
 app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hora
 
 # ==================== CONFIGURACIÓN CORS ====================
-CORS(app,
-     supports_credentials=True,
-     origins=[
-         "http://localhost:8012",
-         "https://github.io",          # CAMBIA esto por tu dominio real
-         "https://127.0.0.1:8012"
-     ]
-)
+CORS(app, supports_credentials=True, origins=["https://jesicamitiap-jpg.github.io", "http://localhost:8012", "https://127.0.0.1:8012"])
 
 # ==================== RUTA PRINCIPAL ====================
 @app.route("/")
@@ -320,11 +313,7 @@ def resumen():
         return jsonify(resumen)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-@app.route('/check_session', methods=['GET'])
-def check_session():
-    if 'user' in session:
-        return jsonify({'logged_in': True, 'user': session['user']}), 200
-    return jsonify({'logged_in': False}), 200
+
 # ==================== INICIO ====================
 if __name__ == '__main__':
     app.run(debug=True, port=5005)
