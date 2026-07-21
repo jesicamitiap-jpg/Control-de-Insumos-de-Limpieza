@@ -90,12 +90,12 @@ def login():
         print(f"Error en login: {e}")
         return jsonify({'success': False, 'message': str(e)}), 500
 
-@app.route('/api/logout', methods=['POST'])
+@app.route('/logout', methods=['POST'])
 def logout():
     session.clear()
     return jsonify({'success': True, 'message': 'Sesión cerrada'})
 
-@app.route('/api/check_session', methods=['GET'])
+@app.route('/check_session', methods=['GET'])
 def check_session():
     if 'user_id' in session:
         return jsonify({
@@ -109,7 +109,7 @@ def check_session():
     return jsonify({'authenticated': False}), 401
 
 # ==================== INSUMOS ====================
-@app.route('/api/insumos', methods=['GET'])
+@app.route('/insumos', methods=['GET'])
 def get_insumos():
     try:
         query = """
@@ -123,7 +123,7 @@ def get_insumos():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/api/insumos/<int:id>', methods=['GET'])
+@app.route('/insumos/<int:id>', methods=['GET'])
 def get_insumo(id):
     try:
         query = """
@@ -139,7 +139,7 @@ def get_insumo(id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/api/insumos', methods=['POST'])
+@app.route('/insumos', methods=['POST'])
 def create_insumo():
     try:
         data = request.json
@@ -169,7 +169,7 @@ def create_insumo():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/api/insumos/<int:id>', methods=['PUT'])
+@app.route('/insumos/<int:id>', methods=['PUT'])
 def update_insumo(id):
     try:
         data = request.json
@@ -201,7 +201,7 @@ def update_insumo(id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/api/insumos/<int:id>', methods=['DELETE'])
+@app.route('/insumos/<int:id>', methods=['DELETE'])
 def delete_insumo(id):
     try:
         query = "DELETE FROM insumos WHERE id_insumo = %s"
@@ -211,7 +211,7 @@ def delete_insumo(id):
         return jsonify({'error': str(e)}), 500
 
 # ==================== MOVIMIENTOS ====================
-@app.route('/api/movimientos', methods=['GET'])
+@app.route('/movimientos', methods=['GET'])
 def get_movimientos():
     try:
         query = """
@@ -227,7 +227,7 @@ def get_movimientos():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/api/movimientos', methods=['POST'])
+@app.route('/movimientos', methods=['POST'])
 def create_movimiento():
     try:
         data = request.json
@@ -264,7 +264,7 @@ def create_movimiento():
         return jsonify({'error': str(e)}), 500
 
 # ==================== CATEGORÍAS ====================
-@app.route('/api/categorias', methods=['GET'])
+@app.route('/categorias', methods=['GET'])
 def get_categorias():
     try:
         query = "SELECT * FROM categorias ORDER BY nombre_categoria"
@@ -274,7 +274,7 @@ def get_categorias():
         return jsonify({'error': str(e)}), 500
 
 # ==================== PROVEEDORES ====================
-@app.route('/api/proveedores', methods=['GET'])
+@app.route('/proveedores', methods=['GET'])
 def get_proveedores():
     try:
         query = "SELECT * FROM proveedores ORDER BY nombre_proveedor"
@@ -284,7 +284,7 @@ def get_proveedores():
         return jsonify({'error': str(e)}), 500
 
 # ==================== REPORTES ====================
-@app.route('/api/reportes/stock_bajo', methods=['GET'])
+@app.route('/reportes/stock_bajo', methods=['GET'])
 def stock_bajo():
     try:
         query = """
@@ -297,7 +297,7 @@ def stock_bajo():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/api/reportes/resumen', methods=['GET'])
+@app.route('/reportes/resumen', methods=['GET'])
 def resumen():
     try:
         resumen = {}
@@ -324,7 +324,7 @@ def resumen():
 def check_session():
     if 'user' in session:
         return jsonify({'logged_in': True, 'user': session['user']}), 200
-    return jsonify({'logged_in': False}), 200C
+    return jsonify({'logged_in': False}), 200
 # ==================== INICIO ====================
 if __name__ == '__main__':
     app.run(debug=True, port=5005)
