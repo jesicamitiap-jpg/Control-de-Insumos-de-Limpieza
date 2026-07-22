@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Insumos de Limpieza</title>
-    <link rel="stylesheet" href="./style.css">
+    <title>Control de Insumos</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
+    <!-- Pantalla Login -->
     <div id="login-container">
         <div class="login-box">
             <h2>Control de Insumos</h2>
@@ -27,10 +27,11 @@
         </div>
     </div>
 
+    <!-- Pantalla Principal -->
     <div id="main-container" style="display: none;">
         <nav class="navbar">
             <div class="nav-header">
-                <h1>Control de Insumos  para el Área de Lavado y Sanidad</h1>
+                <h1>Control de Insumos para el Área de Lavado y Sanidad</h1>
                 <div class="user-info">
                     <span id="user-name">Usuario</span>
                     <button id="logout-btn" class="btn-logout">Cerrar Sesión</button>
@@ -67,8 +68,7 @@
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody id="insumos-body">
-                    </tbody>
+                    <tbody id="insumos-body"></tbody>
                 </table>
             </div>
 
@@ -89,8 +89,7 @@
                             <th>Observaciones</th>
                         </tr>
                     </thead>
-                    <tbody id="movimientos-body">
-                    </tbody>
+                    <tbody id="movimientos-body"></tbody>
                 </table>
             </div>
 
@@ -109,8 +108,7 @@
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody id="categorias-body">
-                    </tbody>
+                    <tbody id="categorias-body"></tbody>
                 </table>
             </div>
 
@@ -131,8 +129,7 @@
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody id="proveedores-body">
-                    </tbody>
+                    <tbody id="proveedores-body"></tbody>
                 </table>
             </div>
 
@@ -153,7 +150,7 @@
         </div>
     </div>
 
-    <!-- Modales -->
+    <!-- Modal Insumo -->
     <div id="modal-insumo" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
@@ -192,11 +189,12 @@
                     <label>Descripción:</label>
                     <textarea id="insumo-descripcion"></textarea>
                 </div>
-                <button type="submit">Guardar</button>
+                <button type="submit">Guardar Insumo</button>
             </form>
         </div>
     </div>
 
+    <!-- Modal Movimiento -->
     <div id="modal-movimiento" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
@@ -222,6 +220,26 @@
                     <textarea id="movimiento-observaciones"></textarea>
                 </div>
                 <button type="submit">Registrar Movimiento</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Categoría -->
+    <div id="modal-categoria" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modal-categoria-title">Nueva Categoría</h2>
+            <form id="categoria-form">
+                <input type="hidden" id="categoria-id">
+                <div class="form-group">
+                    <label>Nombre Categoría:</label>
+                    <input type="text" id="categoria-nombre" required>
+                </div>
+                <div class="form-group">
+                    <label>Descripción:</label>
+                    <textarea id="categoria-descripcion"></textarea>
+                </div>
+                <button type="submit">Guardar Categoría</button>
             </form>
         </div>
     </div>

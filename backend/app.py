@@ -262,15 +262,40 @@ def create_movimiento():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+
 # ==================== CATEGORÍAS ====================
-@app.route('/categorias', methods=['GET'])
-def get_categorias():
-    try:
-        query = "SELECT * FROM categorias ORDER BY nombre_categoria"
-        categorias = execute_query(query)
-        return jsonify(categorias)
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+@app.route('/categorias', methods=['GET', 'POST',"DELETE"])
+def handle_categorias():
+    if request.method == 'GET':
+        try:
+            # Simplificamos la consulta quitando el ORDER BY temporalmente
+            query = "SELECT * FROM categorias"
+            categorias = execute_query(query)
+            return jsonify(categorias)
+        except Exception as e:
+            print("ERROR EN GET CATEGORIAS:", str(e))  # <-- Esto imprimirá el error real en tu terminal
+            return jsonify({'error': str(e)}), 500
+            
+    elif request.method == 'POST':
+        try:
+            data = request.get_json()
+            query = "INSERT INTO categorias (nombre_categoria, descripcion) VALUES (%s, %s)"
+            execute_query(query, (data['nombre_categoria'], data['descripcion']))
+            return jsonify({'success': True, 'message': 'Categoría guardada con éxito'})
+        except Exception as e:
+            print("ERROR EN POST CATEGORIAS:", str(e))
+            return jsonify({'error': str(e)}), 500
+        
+    elif request.method == 'DELETE':
+        try:
+            id_categoria = request.args.get('id')
+            query = "DELETE FROM categorias WHERE id_categoria = %s"
+            execute_query(query, (id_categoria,))
+            return jsonify({'success': True, 'message': 'Categoría eliminada con éxito'})
+        except Exception as e:
+            print("ERROR EN DELETE CATEGORIAS:", str(e))
+            return jsonify({'error': str(e)}), 500
+
 
 # ==================== PROVEEDORES ====================
 @app.route('/proveedores', methods=['GET'])

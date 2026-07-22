@@ -1,10 +1,10 @@
 // ==================== CONFIGURACIÓN ====================
-const API_URL ='http://127.0.0.1:5005';
+const API_URL = 'http://127.0.0.1:5005';
 
 // ==================== FETCH CON CREDENCIALES ====================
 async function fetchWithCredentials(url, options = {}) {
     const defaultOptions = {
-        credentials: 'include', // 🔥 ENVÍA COOKIES DE SESIÓN
+        credentials: 'include', // Envía cookies de sesión
         headers: {
             'Content-Type': 'application/json',
         }
@@ -28,23 +28,27 @@ async function fetchWithCredentials(url, options = {}) {
     }
 }
 
-// ==================== AUTENTICACIÓN ====================
+// ==================== AUTENTICACIÓN Y EVENTOS ====================
 document.addEventListener('DOMContentLoaded', function() {
     checkSession();
     
-    // Login
-    document.getElementById('login-form').addEventListener('submit', handleLogin);
-    document.getElementById('logout-btn').addEventListener('click', handleLogout);
+    // Login y Logout
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) loginForm.addEventListener('submit', handleLogin);
+    
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
     
     // Tabs
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', switchTab);
     });
     
-    // Modales
+    // Modales (Cerrar)
     document.querySelectorAll('.close').forEach(close => {
         close.addEventListener('click', function() {
-            this.closest('.modal').style.display = 'none';
+            const modal = this.closest('.modal');
+            if (modal) modal.style.display = 'none';
         });
     });
     
@@ -54,15 +58,28 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Botones
-    document.getElementById('btn-nuevo-insumo').addEventListener('click', () => openModal('insumo'));
-    document.getElementById('btn-nuevo-movimiento').addEventListener('click', () => openModal('movimiento'));
-    document.getElementById('btn-nueva-categoria').addEventListener('click', () => alert('Función en desarrollo'));
-    document.getElementById('btn-nuevo-proveedor').addEventListener('click', () => alert('Función en desarrollo'));
+    // Botones Abrir Modales
+    const btnInsumo = document.getElementById('btn-nuevo-insumo');
+    if (btnInsumo) btnInsumo.addEventListener('click', () => openModal('insumo'));
     
-    // Forms
-    document.getElementById('insumo-form').addEventListener('submit', handleInsumoSubmit);
-    document.getElementById('movimiento-form').addEventListener('submit', handleMovimientoSubmit);
+    const btnMovimiento = document.getElementById('btn-nuevo-movimiento');
+    if (btnMovimiento) btnMovimiento.addEventListener('click', () => openModal('movimiento'));
+    
+    const btnCategoria = document.getElementById('btn-nueva-categoria');
+    if (btnCategoria) btnCategoria.addEventListener('click', () => openModal('categoria'));
+    
+    const btnProveedor = document.getElementById('btn-nuevo-proveedor');
+    if (btnProveedor) btnProveedor.addEventListener('click', () => alert('Función en desarrollo'));
+    
+    // Formularios Submit
+    const insumoForm = document.getElementById('insumo-form');
+    if (insumoForm) insumoForm.addEventListener('submit', handleInsumoSubmit);
+    
+    const movimientoForm = document.getElementById('movimiento-form');
+    if (movimientoForm) movimientoForm.addEventListener('submit', handleMovimientoSubmit);
+    
+    const catForm = document.getElementById('categoria-form');
+    if (catForm) catForm.addEventListener('submit', handleCategoriaSubmit);
 });
 
 // ==================== SESIÓN ====================
@@ -75,7 +92,7 @@ async function checkSession() {
             document.getElementById('main-container').style.display = 'block';
             document.getElementById('user-name').textContent = data.user.username;
             
-            // Cargar datos
+            // Cargar datos principales
             loadInsumos();
             loadMovimientos();
             loadCategorias();
@@ -89,7 +106,9 @@ async function checkSession() {
         console.error('Error checking session:', error);
         document.getElementById('login-container').style.display = 'flex';
         document.getElementById('main-container').style.display = 'none';
-        document.getElementById('login-error').textContent = '⚠️ Error de conexión con el servidor';
+        
+        const loginError = document.getElementById('login-error');
+        if (loginError) loginError.textContent = '⚠️ Error de conexión con el servidor';
     }
 }
 
@@ -107,7 +126,7 @@ async function handleLogin(e) {
         const data = await response.json();
         if (data.success) {
             document.getElementById('login-error').textContent = '';
-            await checkSession(); // Recargar sesión
+            await checkSession();
         } else {
             document.getElementById('login-error').textContent = data.message || 'Error de autenticación';
         }
@@ -133,84 +152,31 @@ function switchTab(e) {
     
     const tabName = e.target.dataset.tab;
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-    document.getElementById(`tab-${tabName}`).classList.add('active');
     
-    // Recargar datos según tab
+    const targetTab = document.getElementById(`tab-${tabName}`);
+    if (targetTab) targetTab.classList.add('active');
+    
     if (tabName === 'insumos') loadInsumos();
     if (tabName === 'movimientos') loadMovimientos();
+    if (tabName === 'categorias') loadCategorias();
+    if (tabName === 'proveedores') loadProveedores();
     if (tabName === 'reportes') loadReportes();
 }
 
-// ==================== INSUMOS ====================
-async function loadInsumos() {
-    try {
-        const response = await fetchWithCredentials(`${API_URL}/insumos`);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const insumos = await response.json();
-        
-        const tbody = document.getElementById('insumos-body');
-        tbody.innerHTML = '';
-        
-        if (!Array.isArray(insumos)) {
-            console.error('Error: insumos no es un array', insumos);
-            return;
-        }
-        
-        insumos.forEach(insumo => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${insumo.codigo}</td>
-                <td>${insumo.nombre}</td>
-                <td>${insumo.nombre_categoria || 'Sin categoría'}</td>
-                <td>${insumo.stock_actual}</td>
-                <td>${insumo.stock_minimo}</td>
-                <td>$${insumo.precio_unitario || 0}</td>
-                <td>
-                    <button class="btn-action btn-edit" onclick="editInsumo(${insumo.id_insumo})">Editar</button>
-                    <button class="btn-action btn-delete" onclick="deleteInsumo(${insumo.id_insumo})">Eliminar</button>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
-    } catch (error) {
-        console.error('Error loading insumos:', error);
-        document.getElementById('insumos-body').innerHTML = '<tr><td colspan="7">Error al cargar insumos</td></tr>';
-    }
-}
-
-async function loadCategorias() {
-    try {
-        const response = await fetchWithCredentials(`${API_URL}/categorias`);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const categorias = await response.json();
-        
-        const select = document.getElementById('insumo-categoria');
-        select.innerHTML = '<option value="">Seleccionar categoría</option>';
-        if (Array.isArray(categorias)) {
-            categorias.forEach(cat => {
-                const option = document.createElement('option');
-                option.value = cat.id_categoria;
-                option.textContent = cat.nombre_categoria;
-                select.appendChild(option);
-            });
-        }
-    } catch (error) {
-        console.error('Error loading categorias:', error);
-    }
-}
-
+// ==================== MODALES ====================
 function openModal(type, data = null) {
     if (type === 'insumo') {
         const modal = document.getElementById('modal-insumo');
         const form = document.getElementById('insumo-form');
-        form.reset();
+        if (form) form.reset();
+        
         document.getElementById('insumo-id').value = '';
         document.getElementById('modal-insumo-title').textContent = 'Nuevo Insumo';
         
         if (data) {
             document.getElementById('insumo-id').value = data.id_insumo;
-            document.getElementById('insumo-codigo').value = data.codigo;
-            document.getElementById('insumo-nombre').value = data.nombre;
+            document.getElementById('insumo-codigo').value = data.codigo || '';
+            document.getElementById('insumo-nombre').value = data.nombre || '';
             document.getElementById('insumo-categoria').value = data.id_categoria || '';
             document.getElementById('insumo-unidad').value = data.unidad_medida || '';
             document.getElementById('insumo-stock-minimo').value = data.stock_minimo || 5;
@@ -224,9 +190,62 @@ function openModal(type, data = null) {
         loadCategorias();
     } else if (type === 'movimiento') {
         const modal = document.getElementById('modal-movimiento');
-        document.getElementById('movimiento-form').reset();
+        const form = document.getElementById('movimiento-form');
+        if (form) form.reset();
         modal.style.display = 'flex';
         loadInsumosSelect();
+    } else if (type === 'categoria') {
+        const modal = document.getElementById('modal-categoria');
+        const form = document.getElementById('categoria-form');
+        if (form) form.reset();
+        
+        document.getElementById('categoria-id').value = '';
+        document.getElementById('modal-categoria-title').textContent = 'Nueva Categoría';
+        
+        if (data) {
+            document.getElementById('categoria-id').value = data.id_categoria;
+            document.getElementById('categoria-nombre').value = data.nombre_categoria || '';
+            document.getElementById('categoria-descripcion').value = data.descripcion || '';
+            document.getElementById('modal-categoria-title').textContent = 'Editar Categoría';
+        }
+        
+        modal.style.display = 'flex';
+    }
+}
+
+// ==================== INSUMOS ====================
+async function loadInsumos() {
+    try {
+        const response = await fetchWithCredentials(`${API_URL}/insumos`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const insumos = await response.json();
+        
+        const tbody = document.getElementById('insumos-body');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        
+        if (!Array.isArray(insumos)) return;
+        
+        insumos.forEach(insumo => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${insumo.codigo}</td>
+                <td>${insumo.nombre}</td>
+                <td>${insumo.nombre_categoria || 'Sin categoría'}</td>
+                <td>${insumo.stock_actual}</td>
+                <td>${insumo.stock_minimo}</td>
+                <td>$${insumo.precio_unitario || 0}</td>
+                <td>
+                    <button class="btn-action btn-edit" onclick="window.editInsumo(${insumo.id_insumo})">Editar</button>
+                    <button class="btn-action btn-delete" onclick="window.deleteInsumo(${insumo.id_insumo})">Eliminar</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    } catch (error) {
+        console.error('Error loading insumos:', error);
+        const tbody = document.getElementById('insumos-body');
+        if (tbody) tbody.innerHTML = '<tr><td colspan="7">Error al cargar insumos</td></tr>';
     }
 }
 
@@ -235,8 +254,11 @@ async function loadInsumosSelect() {
         const response = await fetchWithCredentials(`${API_URL}/insumos`);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const insumos = await response.json();
+        
         const select = document.getElementById('movimiento-insumo');
+        if (!select) return;
         select.innerHTML = '';
+        
         if (Array.isArray(insumos)) {
             insumos.forEach(insumo => {
                 const option = document.createElement('option');
@@ -279,7 +301,7 @@ async function handleInsumoSubmit(e) {
             loadReportes();
         } else {
             const error = await response.json();
-            alert('Error: ' + (error.message || 'Error al guardar'));
+            alert('Error: ' + (error.message || 'Error al guardar el insumo'));
         }
     } catch (error) {
         console.error('Error saving insumo:', error);
@@ -320,6 +342,116 @@ async function deleteInsumo(id) {
     }
 }
 
+// ==================== CATEGORÍAS ====================
+async function loadCategorias() {
+    try {
+        const response = await fetchWithCredentials(`${API_URL}/categorias`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const categorias = await response.json();
+        
+        // Renderizar tabla de Categorías
+        const tbody = document.getElementById('categorias-body');
+        if (tbody) {
+            tbody.innerHTML = '';
+            if (Array.isArray(categorias)) {
+                categorias.forEach(cat => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${cat.id_categoria}</td>
+                        <td>${cat.nombre_categoria}</td>
+                        <td>${cat.descripcion || ''}</td>
+                        <td>
+                            <button class="btn-action btn-edit" onclick="window.editCategoria(${cat.id_categoria})">Editar</button>
+                            <button class="btn-action btn-delete" onclick="window.deleteCategoria(${cat.id_categoria})">Eliminar</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+        }
+
+        // Renderizar selector en modal Insumos
+        const select = document.getElementById('insumo-categoria');
+        if (select) {
+            select.innerHTML = '<option value="">Seleccionar categoría</option>';
+            if (Array.isArray(categorias)) {
+                categorias.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat.id_categoria;
+                    option.textContent = cat.nombre_categoria;
+                    select.appendChild(option);
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Error loading categorias:', error);
+        const tbody = document.getElementById('categorias-body');
+        if (tbody) tbody.innerHTML = '<tr><td colspan="4">Error al cargar categorías</td></tr>';
+    }
+}
+
+async function handleCategoriaSubmit(e) {
+    e.preventDefault();
+    const id = document.getElementById('categoria-id').value;
+    const data = {
+        nombre_categoria: document.getElementById('categoria-nombre').value,
+        descripcion: document.getElementById('categoria-descripcion').value
+    };
+    
+    try {
+        const url = id ? `${API_URL}/categorias/${id}` : `${API_URL}/categorias`;
+        const method = id ? 'PUT' : 'POST';
+        
+        const response = await fetchWithCredentials(url, {
+            method: method,
+            body: JSON.stringify(data)
+        });
+        
+        if (response.ok) {
+            document.getElementById('modal-categoria').style.display = 'none';
+            loadCategorias();
+        } else {
+            const error = await response.json();
+            alert('Error: ' + (error.message || 'Error al guardar la categoría'));
+        }
+    } catch (error) {
+        console.error('Error saving categoria:', error);
+        alert('Error al guardar la categoría');
+    }
+}
+
+async function editCategoria(id) {
+    try {
+        const response = await fetchWithCredentials(`${API_URL}/categorias/${id}`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        if (data.error) {
+            alert(data.error);
+            return;
+        }
+        openModal('categoria', data);
+    } catch (error) {
+        console.error('Error loading categoria for edit:', error);
+        alert('Error al cargar la categoría');
+    }
+}
+
+async function deleteCategoria(id) {
+    if (!confirm('¿Estás seguro de eliminar esta categoría?')) return;
+    
+    try {
+        const response = await fetchWithCredentials(`${API_URL}/categorias/${id}`, { method: 'DELETE' });
+        if (response.ok) {
+            loadCategorias();
+        } else {
+            alert('Error al eliminar la categoría');
+        }
+    } catch (error) {
+        console.error('Error deleting categoria:', error);
+        alert('Error al eliminar la categoría');
+    }
+}
+
 // ==================== MOVIMIENTOS ====================
 async function loadMovimientos() {
     try {
@@ -328,6 +460,7 @@ async function loadMovimientos() {
         const movimientos = await response.json();
         
         const tbody = document.getElementById('movimientos-body');
+        if (!tbody) return;
         tbody.innerHTML = '';
         
         if (Array.isArray(movimientos)) {
@@ -346,7 +479,8 @@ async function loadMovimientos() {
         }
     } catch (error) {
         console.error('Error loading movimientos:', error);
-        document.getElementById('movimientos-body').innerHTML = '<tr><td colspan="6">Error al cargar movimientos</td></tr>';
+        const tbody = document.getElementById('movimientos-body');
+        if (tbody) tbody.innerHTML = '<tr><td colspan="6">Error al cargar movimientos</td></tr>';
     }
 }
 
@@ -388,6 +522,7 @@ async function loadProveedores() {
         const proveedores = await response.json();
         
         const tbody = document.getElementById('proveedores-body');
+        if (!tbody) return;
         tbody.innerHTML = '';
         
         if (Array.isArray(proveedores)) {
@@ -409,7 +544,8 @@ async function loadProveedores() {
         }
     } catch (error) {
         console.error('Error loading proveedores:', error);
-        document.getElementById('proveedores-body').innerHTML = '<tr><td colspan="6">Error al cargar proveedores</td></tr>';
+        const tbody = document.getElementById('proveedores-body');
+        if (tbody) tbody.innerHTML = '<tr><td colspan="6">Error al cargar proveedores</td></tr>';
     }
 }
 
@@ -422,28 +558,29 @@ async function loadReportes() {
         const stockBajo = await stockResponse.json();
         
         const stockList = document.getElementById('stock-bajo-list');
-        stockList.innerHTML = '';
-        
-        if (Array.isArray(stockBajo) && stockBajo.length === 0) {
-            stockList.innerHTML = '<p>✅ No hay productos con stock bajo</p>';
-        } else if (Array.isArray(stockBajo)) {
-            const ul = document.createElement('ul');
-            stockBajo.forEach(item => {
-                const li = document.createElement('li');
-                li.className = 'stock-bajo-item';
-                li.textContent = `${item.nombre}: ${item.stock_actual} unidades (Mínimo: ${item.stock_minimo})`;
-                ul.appendChild(li);
-            });
-            stockList.appendChild(ul);
+        if (stockList) {
+            stockList.innerHTML = '';
+            if (Array.isArray(stockBajo) && stockBajo.length === 0) {
+                stockList.innerHTML = '<p>✅ No hay productos con stock bajo</p>';
+            } else if (Array.isArray(stockBajo)) {
+                const ul = document.createElement('ul');
+                stockBajo.forEach(item => {
+                    const li = document.createElement('li');
+                    li.className = 'stock-bajo-item';
+                    li.textContent = `${item.nombre}: ${item.stock_actual} unidades (Mínimo: ${item.stock_minimo})`;
+                    ul.appendChild(li);
+                });
+                stockList.appendChild(ul);
+            }
         }
         
-        // Resumen
+        // Resumen General
         const resumenResponse = await fetchWithCredentials(`${API_URL}/reportes/resumen`);
         if (!resumenResponse.ok) throw new Error(`HTTP ${resumenResponse.status}`);
         const resumen = await resumenResponse.json();
         
         const resumenDiv = document.getElementById('resumen-general');
-        if (resumen && !resumen.error) {
+        if (resumenDiv && resumen && !resumen.error) {
             resumenDiv.innerHTML = `
                 <div class="resumen-item">
                     <span class="label">Total de Insumos:</span>
@@ -461,11 +598,13 @@ async function loadReportes() {
         }
     } catch (error) {
         console.error('Error loading reportes:', error);
-        document.getElementById('stock-bajo-list').innerHTML = '<p>Error al cargar reportes</p>';
+        const stockList = document.getElementById('stock-bajo-list');
+        if (stockList) stockList.innerHTML = '<p>Error al cargar reportes</p>';
     }
 }
 
-// ==================== UTILIDADES ====================
-// Hacer funciones globales para los onclick
+// ==================== ASIGNACIONES GLOBALES ====================
 window.editInsumo = editInsumo;
 window.deleteInsumo = deleteInsumo;
+window.editCategoria = editCategoria;
+window.deleteCategoria = deleteCategoria;
